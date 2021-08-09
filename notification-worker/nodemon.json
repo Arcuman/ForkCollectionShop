@@ -1,0 +1,14 @@
+{
+  "watch": [
+    "dist"
+  ],
+  "ext": "js,json",
+  "ignore": [
+    "dist/**/*.spec.js",
+    "**/*.test.js",
+    "**/*.spec.js",
+    ".git",
+    "node_modules"
+  ],
+  "exec": "node ./dist/server.js"
+}

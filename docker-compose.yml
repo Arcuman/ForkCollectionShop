@@ -1,5 +1,35 @@
 version: "3.7"
 services:
+  test_task_backend:
+    container_name: test_task_backend
+    build:
+      context: mainapp/.
+      dockerfile: Dockerfile
+    image: mainapp
+    restart: unless-stopped
+    ports:
+        - "5000:5000"
+    depends_on:
+        - test_rabbitmq
+        - test_task_postgres
+    links:
+        - test_task_postgres:test_task_postgres
+        - test_rabbitmq:test_rabbitmq
+    networks:
+        - tesk_task_network
+  test_task_worker:
+    container_name: test_task_worker
+    build:
+      context: notification-worker/.
+      dockerfile: Dockerfile
+    image: test_task_worker
+    restart: unless-stopped
+    depends_on:
+      - test_rabbitmq
+    links:
+      - test_rabbitmq:test_rabbitmq
+    networks:
+      - tesk_task_network
   test_task_postgres:
     container_name: test_task_postgres
     image: postgres:latest
@@ -10,7 +40,9 @@ services:
     env_file:
       - docker.env
     networks:
-      - test_task_postgres
+      - tesk_task_network
+
+
   test_task_pgadmin:
     links:
       - test_task_postgres:test_task_postgres
@@ -23,11 +55,11 @@ services:
     env_file:
       - docker.env
     networks:
-      - test_task_postgres
+      - tesk_task_network
+
   test_rabbitmq:
     image: rabbitmq:3-management
     container_name: test_rabbitmq
-    hostname: rabbitmq
     volumes:
       - /var/lib/rabbitmq
     ports:
@@ -35,7 +67,9 @@ services:
       - "15672:15672"
     env_file:
       - ./rabbitmq.env
+    networks:
+      - tesk_task_network
+
 
 networks:
-  test_task_postgres:
-    driver: bridge
+  tesk_task_network:
